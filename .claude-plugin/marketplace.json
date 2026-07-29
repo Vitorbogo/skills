@@ -83,6 +83,11 @@
       "name": "zoom-out",
       "source": "./skills/zoom-out",
       "description": "Tell the agent to zoom out and give broader context or a higher-level perspective. Use when you're unfamiliar with a section of code or need to understand how it fits into the bigger picture."
+    },
+    {
+      "name": "wayfinder",
+      "source": "./skills/wayfinder",
+      "description": "Plan a huge chunk of work — more than one agent session can hold — as a shared map of decision tickets on your issue tracker, and resolve them one at a time until the way to the destination is clear."
     }
   ]
 }
