@@ -20,12 +20,23 @@ Add the marketplace once per machine:
 Then install whichever skills you want, one at a time:
 
 ```
-/plugin install diagnose@vitorbogo-skills
-/plugin install tdd@vitorbogo-skills
+/plugin install check-comments@vitorbogo-skills
+/plugin install vault-memory@vitorbogo-skills
 ```
 
 Run `/reload-skills` after installing to pick them up in the current
 session.
+
+## vault-memory
+
+Uses a folder of linked markdown notes (an Obsidian vault works) as the agent's
+long-term memory. One plugin, two skills and a hook:
+
+- `vault` — how the agent reads and writes the vault. Fires on its own.
+- `/vault-memory:setup-vault <path>` — creates a vault, or adopts an existing one by
+  giving every note a one-line `description`, then sets `VAULT_PATH`.
+- A SessionStart hook rebuilds `INDEX.md` (one line per note) and loads it into the
+  session.
 
 ## Update a skill
 
@@ -53,5 +64,6 @@ has it installed:
    ```json
    { "name": "<name>", "source": "./skills/<name>", "description": "<same description>" }
    ```
+   For a plugin with several skills, put each in `skills/<name>/skills/<skill>/` and list them in its plugin.json: `"skills": ["./skills/a", "./skills/b"]`.
 4. Run `python3 scripts/validate_marketplace.py` to confirm it's wired up correctly.
 5. Commit and push.
