@@ -11,7 +11,9 @@ import os
 import sys
 
 INDEX = "INDEX.md"
-SKIP_DIRS = {".obsidian", ".git", ".trash", "node_modules"}
+SKIP_DIRS = {".obsidian", ".git", ".trash", "node_modules", "templates", "Templates"}
+# Agent instruction files live in the vault but are not notes.
+SKIP_FILES = {INDEX, "AGENTS.md", "CLAUDE.md"}
 # Past this size the hook injects a pointer instead of the whole index, so a big
 # vault does not spend thousands of tokens on every session.
 HOOK_MAX_CHARS = int(os.environ.get("VAULT_INDEX_MAX_CHARS", "9000"))
@@ -37,7 +39,7 @@ def notes(vault):
         dirs[:] = sorted(d for d in dirs if d not in SKIP_DIRS and not d.startswith("."))
         for name in sorted(files):
             rel = os.path.relpath(os.path.join(root, name), vault)
-            if name.endswith(".md") and rel != INDEX:
+            if name.endswith(".md") and name not in SKIP_FILES:
                 yield rel, frontmatter(os.path.join(root, name))
 
 
