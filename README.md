@@ -36,7 +36,8 @@ long-term memory. One plugin, two skills and a hook:
 - `/vault-memory:setup-vault <path>` — creates a vault, or adopts an existing one by
   giving every note a one-line `description`, then sets `VAULT_PATH`.
 - A SessionStart hook rebuilds `INDEX.md` (one line per note) and loads it into the
-  session.
+  session. A PostToolUse hook rebuilds it after every write to a note, and lints the note:
+  frontmatter, `type`, a one-line `description`, and a link from another note.
 
 ## Update a skill
 

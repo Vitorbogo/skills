@@ -27,11 +27,11 @@ Go to step 4.
 ## 3. Adopt
 
 1. Read the vault's existing conventions file, if it has one. Add the `description` rule from [conventions-template.md](conventions-template.md) to it, in the vault's own voice. Leave its other rules as they are.
-2. Run `python3 "${CLAUDE_SKILL_DIR}/../../scripts/build_index.py" <path>`. The `## Missing description` section of `INDEX.md` lists the work.
-3. For each note in that list, read it and add a one-line `description` to its frontmatter. Add the frontmatter block when the note has none. Change nothing else in the note.
+2. Run `python3 "${CLAUDE_SKILL_DIR}/../../scripts/build_index.py" <path>`. It lists every problem: a missing description, type, or frontmatter, and a note no other note links to.
+3. For each note without a description, read it and add a one-line `description` to its frontmatter. Add the frontmatter block when the note has none. Link each unlinked note from its domain MOC. Change nothing else in the note.
 4. Rerun the script.
 
-Done when the script reports 0 notes without a description.
+Done when the script reports 0 problems.
 
 ## 4. Wire
 

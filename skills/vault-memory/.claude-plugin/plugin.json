@@ -1,6 +1,6 @@
 {
   "name": "vault-memory",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "A markdown knowledge vault as agent memory: rules for reading and writing it, a generated INDEX.md, a SessionStart hook that loads it, and a setup command.",
   "author": { "name": "Vitor Bogo" },
   "license": "MIT",

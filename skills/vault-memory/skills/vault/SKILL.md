@@ -56,6 +56,6 @@ The `description` is the note's pointer in the index. Write it so an agent can p
 
 - Save the note in the folder for its domain, following the routing in `Meta/conventions.md`.
 - Link it from that domain's MOC, and link related notes both ways.
-- `INDEX.md` rebuilds at each session start. To refresh it now, run `python3 "${CLAUDE_SKILL_DIR}/../../scripts/build_index.py"`.
+- A hook rebuilds `INDEX.md` after every write to a vault note, and lints that note. When it reports a problem, fix the note.
 
 Done when the note has a description, sits in its domain folder, and its MOC links to it.

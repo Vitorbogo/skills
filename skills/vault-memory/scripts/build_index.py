@@ -2,12 +2,16 @@
 """Build INDEX.md for a markdown vault: one line per note, from its frontmatter.
 
 Usage:
-  build_index.py [VAULT]         write INDEX.md and print a summary
-  build_index.py --hook [VAULT]  write INDEX.md and print it for a SessionStart hook
+  build_index.py [VAULT]                write INDEX.md, lint every note, print problems
+  build_index.py --hook [VAULT]         write INDEX.md and print it for a SessionStart hook
+  build_index.py --after-write [VAULT]  PostToolUse hook: when the written file is a vault
+                                        note, rewrite INDEX.md and lint that note
 
-VAULT defaults to $VAULT_PATH. In hook mode an unset or missing vault prints nothing.
+VAULT defaults to $VAULT_PATH. In hook modes an unset or missing vault prints nothing.
 """
+import json
 import os
+import re
 import sys
 
 INDEX = "INDEX.md"
@@ -34,12 +38,45 @@ def frontmatter(path):
     return meta
 
 
+def is_note(rel):
+    parts = rel.split(os.sep)
+    return (rel.endswith(".md") and parts[-1] not in SKIP_FILES
+            and not any(p in SKIP_DIRS or p.startswith(".") for p in parts[:-1]))
+
+
+def link_targets(vault):
+    """Map each note name to the set of other notes that link to it."""
+    linked = {}
+    for rel, _ in notes(vault):
+        text = open(os.path.join(vault, rel), encoding="utf-8", errors="replace").read()
+        for target in re.findall(r"\[\[([^\]|#]+)", text):
+            linked.setdefault(os.path.basename(target.strip()).removesuffix(".md"), set()).add(rel)
+    return linked
+
+
+def lint(vault, rel, meta, linked):
+    problems = []
+    if not meta:
+        problems.append("no frontmatter")
+    if not meta.get("type"):
+        problems.append("no `type`")
+    desc = meta.get("description", "")
+    if not desc:
+        problems.append("no `description`")
+    elif desc[0] in ">|":
+        problems.append("`description` must be one line, not a block")
+    name = os.path.basename(rel).removesuffix(".md")
+    if os.sep in rel and not linked.get(name, set()) - {rel}:
+        problems.append("no other note links to it; link it from its MOC")
+    return [f"{rel}: {p}" for p in problems]
+
+
 def notes(vault):
     for root, dirs, files in os.walk(vault):
         dirs[:] = sorted(d for d in dirs if d not in SKIP_DIRS and not d.startswith("."))
         for name in sorted(files):
             rel = os.path.relpath(os.path.join(root, name), vault)
-            if name.endswith(".md") and name not in SKIP_FILES:
+            if is_note(rel):
                 yield rel, frontmatter(os.path.join(root, name))
 
 
@@ -74,20 +111,39 @@ def build(vault):
     return text, total, len(missing)
 
 
+def after_write(vault):
+    """Exit 2 sends stderr back to the agent, so it fixes the note it just wrote."""
+    path = json.load(sys.stdin).get("tool_input", {}).get("file_path", "")
+    rel = os.path.relpath(os.path.realpath(path), os.path.realpath(vault))
+    if not path or rel.startswith("..") or not is_note(rel) or not os.path.isfile(path):
+        return
+    build(vault)
+    problems = lint(vault, rel, frontmatter(path), link_targets(vault))
+    if problems:
+        sys.stderr.write("Vault note problems (see the vault skill):\n" + "\n".join(problems) + "\n")
+        sys.exit(2)
+
+
 def main():
     args = sys.argv[1:]
-    hook = "--hook" in args
-    args = [a for a in args if a != "--hook"]
+    mode = next((a for a in args if a.startswith("--")), "")
+    args = [a for a in args if not a.startswith("--")]
     vault = os.path.expanduser(args[0] if args else os.environ.get("VAULT_PATH", ""))
     if not vault or not os.path.isdir(vault):
-        if hook:
+        if mode:
             return
         sys.exit(f"vault not found: {vault or '$VAULT_PATH is unset'}")
+    if mode == "--after-write":
+        return after_write(vault)
 
     text, total, missing = build(vault)
     index_path = os.path.join(vault, INDEX)
-    if not hook:
-        print(f"wrote {index_path}: {total} notes, {missing} without a description")
+    if not mode:
+        linked = link_targets(vault)
+        problems = [p for rel, meta in notes(vault) for p in lint(vault, rel, meta, linked)]
+        print(f"wrote {index_path}: {total} notes, {len(problems)} problems")
+        print("\n".join(problems) or "no problems")
+        sys.exit(1 if problems else 0)
     elif len(text) <= HOOK_MAX_CHARS:
         print(f"Knowledge vault at {vault}. Use the vault skill before reading or writing it.\n\n{text}")
     else:
