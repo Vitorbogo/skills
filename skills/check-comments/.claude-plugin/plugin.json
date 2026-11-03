@@ -1,0 +1,9 @@
+{
+  "name": "check-comments",
+  "version": "1.0.0",
+  "description": "Judge every comment by the facts it carries. Remove the ones that carry none, shorten the ones padded around a few, keep the rest at any length. Use when asked to check, clean up, remove, or shorten comments, when a comment restates the code, when a comment is bloated or too long, when reviewing the comments a branch or PR introduced, or on `/check-comments [<number>]`.",
+  "author": {
+    "name": "Vitor Bogo"
+  },
+  "license": "MIT"
+}

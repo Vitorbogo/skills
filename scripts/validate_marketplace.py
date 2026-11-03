@@ -37,17 +37,18 @@ def main():
 
         rel = source[2:] if source.startswith("./") else source
         skill_dir = os.path.join(REPO_ROOT, rel)
-        skill_md = os.path.join(skill_dir, "SKILL.md")
         plugin_json_path = os.path.join(skill_dir, ".claude-plugin", "plugin.json")
-
-        if not os.path.isfile(skill_md):
-            errors.append(f"{name}: missing {skill_md}")
 
         if not os.path.isfile(plugin_json_path):
             errors.append(f"{name}: missing {plugin_json_path}")
         else:
             with open(plugin_json_path) as f:
                 pj = json.load(f)
+            # A plugin is one root SKILL.md, or several listed under "skills".
+            for skill in pj.get("skills", ["."]):
+                skill_md = os.path.normpath(os.path.join(skill_dir, skill, "SKILL.md"))
+                if not os.path.isfile(skill_md):
+                    errors.append(f"{name}: missing {skill_md}")
             if pj.get("name") != name:
                 errors.append(
                     f"{name}: plugin.json name '{pj.get('name')}' "

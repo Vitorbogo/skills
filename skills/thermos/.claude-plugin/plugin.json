@@ -1,0 +1,9 @@
+{
+  "name": "thermos",
+  "version": "1.0.0",
+  "description": "Launch both thermo-nuclear review subagents in parallel, then synthesize their findings. Use for thermos, double thermo review, or combined bug/security and code-quality branch audits.",
+  "author": {
+    "name": "Vitor Bogo"
+  },
+  "license": "MIT"
+}
